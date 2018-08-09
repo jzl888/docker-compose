@@ -60,7 +60,7 @@ services:
     volumes:
       - $PWD/log/ms-provider-user:/msuser/log
     ports:
-      - "9101:9101"
+      - "8101:9101"
       - "9501:9501"
 
   transaction-db:
