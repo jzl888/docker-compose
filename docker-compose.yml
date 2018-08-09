@@ -1,0 +1,77 @@
+version: "2"
+services:
+  # 资源端
+  provider-spa:
+    # replace username/repo:tag with your name and image details
+    image: docker.huixiaoer.net/provider-spa:latest
+    extra_hosts:
+     - "json-server:47.93.11.142"
+    # - "ms-internal-user:47.93.11.142"
+    # - "ms-provider-user:47.93.11.142"
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - webnet
+    depends_on:
+      - ms-internal-user
+      - ms-provider-user
+
+  # 平台端
+  platform-spa:
+    # replace username/repo:tag with your name and image details
+    image: docker.huixiaoer.net/platform-spa:latest
+    extra_hosts:
+     - "json-server:47.93.11.142"
+    # - "ms-internal-user:47.93.11.142"
+    # - "ms-provider-user:47.93.11.142"
+    ports:
+      - "9000:80"
+    networks:
+      - webnet
+    depends_on:
+      - ms-internal-user
+      - ms-provider-user
+
+  ms-internal-user:
+    image: docker.huixiaoer.net/ms-internal-user:latest
+    networks:
+      - webnet
+    depends_on:
+      - transaction-db
+    volumes:
+      - $PWD/log/ms-internal-user:/msuser/log
+    ports:
+      - "9100:9100"
+      - "9500:9500"
+
+  ms-provider-user:
+    image: docker.huixiaoer.net/ms-provider-user:latest
+    networks:
+      - webnet
+    depends_on:
+      - transaction-db
+    entrypoint:
+      - java
+      - -jar
+      - /msuser/ms-provider-user-0.0.1-SNAPSHOT.jar
+      - --spring.profiles.active=prod
+      - --app.auth.enableUniversalSMSCode=true
+    volumes:
+      - $PWD/log/ms-provider-user:/msuser/log
+    ports:
+      - "9101:9101"
+      - "9501:9501"
+
+  transaction-db:
+    image: docker.huixiaoer.net/mysql-hxe-transaction-db:latest
+    networks:
+      - webnet
+    environment:
+      MYSQL_ROOT_PASSWORD:  IUJvdfwr277^%
+    volumes:
+      - $PWD/mysql-data:/var/lib/mysql
+    ports:
+      - "9206:3306"
+networks:
+  webnet:
